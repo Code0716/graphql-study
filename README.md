@@ -8,4 +8,5 @@ GraphQL学習用
 
 ・docker-composeを立ち上げる:`docker compose up -d` 
 
-・playgroundの起動:`make up`
+・起動:`make up`
+・playground起動:`make play`
