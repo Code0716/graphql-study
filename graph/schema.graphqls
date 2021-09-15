@@ -1,0 +1,62 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+enum Status {
+  FRIEND
+  FAMILY
+  BUSINESS
+  OTHER
+}
+
+type Member {
+  id: Int!
+  memberId: ID!
+  name: String!
+  address: String!
+  phone_number: String!
+  status: Status!
+  birthday: Time
+  createdAt: Time!
+  updatedAt: Time!
+  deletedAt: Time
+}
+
+type CommonSuccessResponse {
+  Message: String!
+}
+
+input GetMemberParams {
+  id: ID
+  name: String
+}
+
+input CreateMember {
+  name: String!
+  address: String
+  phone_number: String
+  status: Status
+  birthday: Time
+}
+
+input Pager {
+  limit: Int
+  offset: Int
+  status: String
+}
+
+type Query {
+  members(input: Pager): [Member!]!
+  member(input: GetMemberParams!): Member!
+}
+
+type Mutation {
+  createMember(input: CreateMember!): Member!
+}
+
+scalar Date
+scalar Time
+scalar Map
+scalar Upload
+scalar Any
+scalar YesNo
