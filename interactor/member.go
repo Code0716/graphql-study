@@ -9,61 +9,57 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-// MembersInteractor is member interactor.
-type MembersInteractor struct {
-	MembersRepository repository.MembersInterface
+// PersonsInteractor is person interactor.
+type PersonsInteractor struct {
+	PersonsRepository repository.PersonsInterface
 }
 
-// NewMembers initializes item interactor.
-func NewMembers(
-	membersRepo repository.MembersInterface,
-) *MembersInteractor {
-	return &MembersInteractor{
-		MembersRepository: membersRepo,
+// NewPersons initializes item interactor.
+func NewPersons(
+	personsRepo repository.PersonsInterface,
+) *PersonsInteractor {
+	return &PersonsInteractor{
+		PersonsRepository: personsRepo,
 	}
 }
 
-// GetAllMembers returns member list
-// im: members interactor
-func (im *MembersInteractor) GetAllMembers(ctx context.Context, params domain.Pager) ([]*domain.Member, error) {
-	memberList, err := im.MembersRepository.GetAllMembers(ctx, params)
+// GetAllPersons returns person list
+// im: persons interactor
+func (im *PersonsInteractor) GetAllPersons(ctx context.Context, params domain.Pager) ([]*domain.Person, error) {
+	personList, err := im.PersonsRepository.GetAllPersons(ctx, params)
 	if err != nil {
 		return nil, err
 	}
 
-	return memberList, nil
+	return personList, nil
 }
 
-// GetMember returns member
-// im: members interactor
-func (im *MembersInteractor) GetMember(ctx context.Context, params domain.GetMemberParams) (*domain.Member, error) {
-	member, err := im.MembersRepository.GetMember(ctx, params)
+// GetPerson returns person
+// im: persons interactor
+func (im *PersonsInteractor) GetPerson(ctx context.Context, params domain.GetPersonParams) (*domain.Person, error) {
+	person, err := im.PersonsRepository.GetPerson(ctx, params)
 	if err != nil {
 		return nil, err
 	}
 
-	return member, nil
+	return person, nil
 }
 
-// RegistMember regist member
-// im: members interactor
-func (im *MembersInteractor) RegistMember(ctx context.Context, params domain.Member) (*domain.Member, error) {
+// RegistPerson regist person
+// im: persons interactor
+func (im *PersonsInteractor) RegistPerson(ctx context.Context, params domain.Person) (*domain.Person, error) {
 	currentTime := time.Now()
 	params.CreatedAt = currentTime
 	params.UpdatedAt = currentTime
-	params.MemberID = uuid.NewV4().String()
+	params.PersonID = uuid.NewV4().String()
 
 	if params.Birthday == nil {
 		params.Birthday = nil
 	}
 
-	if params.Status == "" {
-		params.Status = domain.StatusMap[domain.StatusCodeOther]
-	}
-
-	member, err := im.MembersRepository.CreateMember(ctx, params)
+	person, err := im.PersonsRepository.CreatePerson(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	return member, nil
+	return person, nil
 }

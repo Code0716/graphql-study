@@ -6,54 +6,54 @@ import (
 	"github.com/Code0716/graphql-study/domain"
 )
 
-// MembersInterface  is data access methods to Members.
-type MembersInterface interface {
-	CreateMember(ctx context.Context, member domain.Member) (*domain.Member, error)
-	GetAllMembers(ctx context.Context, params domain.Pager) ([]*domain.Member, error)
-	GetMember(ctx context.Context, params domain.GetMemberParams) (*domain.Member, error)
+// PersonsInterface  is data access methods to Persons.
+type PersonsInterface interface {
+	CreatePerson(ctx context.Context, person domain.Person) (*domain.Person, error)
+	GetAllPersons(ctx context.Context, params domain.Pager) ([]*domain.Person, error)
+	GetPerson(ctx context.Context, params domain.GetPersonParams) (*domain.Person, error)
 }
 
-// MembersRepository is member repository.
-type MembersRepository struct {
+// PersonsRepository is person repository.
+type PersonsRepository struct {
 	SQLHandler SQLHandlerInterface
 }
 
-// NewMembers initializes members repository.
-func NewMembers(sqlHandler SQLHandlerInterface) *MembersRepository {
-	return &MembersRepository{
+// NewPersons initializes persons repository.
+func NewPersons(sqlHandler SQLHandlerInterface) *PersonsRepository {
+	return &PersonsRepository{
 		sqlHandler,
 	}
 }
 
-// CreateMember regist member to members db
-func (r *MembersRepository) CreateMember(ctx context.Context, member domain.Member) (*domain.Member, error) {
-	err := r.SQLHandler.Create(&member)
+// CreatePerson regist person to persons db
+func (r *PersonsRepository) CreatePerson(ctx context.Context, person domain.Person) (*domain.Person, error) {
+	err := r.SQLHandler.Create(&person)
 	if err != nil {
 		return nil, err
 	}
-	return &member, nil
+	return &person, nil
 }
 
-// GetMember return members found by params
-func (r *MembersRepository) GetMember(ctx context.Context, params domain.GetMemberParams) (*domain.Member, error) {
-	var member *domain.Member
-	err := r.SQLHandler.First(&member, params)
+// GetPerson return persons found by params
+func (r *PersonsRepository) GetPerson(ctx context.Context, params domain.GetPersonParams) (*domain.Person, error) {
+	var person *domain.Person
+	err := r.SQLHandler.First(&person, params)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return member, nil
+	return person, nil
 }
 
-// GetAllMembers return members found by params
-func (r *MembersRepository) GetAllMembers(ctx context.Context, params domain.Pager) ([]*domain.Member, error) {
-	var members []*domain.Member
-	err := r.SQLHandler.Find(&members, params)
+// GetAllPersons return persons found by params
+func (r *PersonsRepository) GetAllPersons(ctx context.Context, params domain.Pager) ([]*domain.Person, error) {
+	var persons []*domain.Person
+	err := r.SQLHandler.Find(&persons, params)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return members, nil
+	return persons, nil
 }

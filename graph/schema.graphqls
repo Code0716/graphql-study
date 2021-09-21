@@ -2,56 +2,64 @@
 #
 # https://gqlgen.com/getting-started/
 
-enum Status {
-  FRIEND
-  FAMILY
-  BUSINESS
-  OTHER
-}
-
-type Member {
+type Person {
   id: Int!
-  memberId: ID!
+  person_id: ID!
   name: String!
   address: String!
   phone_number: String!
-  status: Status!
+  class_name: String!
   birthday: Time
-  createdAt: Time!
-  updatedAt: Time!
-  deletedAt: Time
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
 }
 
 type CommonSuccessResponse {
-  Message: String!
+  message: String!
 }
 
-input GetMemberParams {
+type Classification {
+  id: ID!
+  classId: String!
+  class_name: String!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+}
+
+input GetPersonParams {
   id: ID
   name: String
 }
 
-input CreateMember {
+input CreatePerson {
   name: String!
   address: String
   phone_number: String
-  status: Status
-  birthday: Time
+  class_name: String
+  birthday: String
+}
+
+input CreateClassification {
+  class_name: String!
 }
 
 input Pager {
   limit: Int
   offset: Int
-  status: String
+  class_name: String
 }
 
 type Query {
-  members(input: Pager): [Member!]!
-  member(input: GetMemberParams!): Member!
+  persons(input: Pager): [Person!]!
+  person(input: GetPersonParams!): Person!
+  classifications(input: Pager): [Classification!]!
 }
 
 type Mutation {
-  createMember(input: CreateMember!): Member!
+  createPerson(input: CreatePerson!): Person!
+  createClassification(input: CreateClassification!): CommonSuccessResponse!
 }
 
 scalar Date

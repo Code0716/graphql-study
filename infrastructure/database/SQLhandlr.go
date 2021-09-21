@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// SQLHandler struct
 type SQLHandler struct {
 	Conn *gorm.DB
 }
@@ -22,12 +23,8 @@ func (h SQLHandler) Create(value interface{}) error {
 
 // Find gorm find
 func (h SQLHandler) Find(value interface{}, params domain.Pager) error {
-	query := h.Conn
-	if *params.Status != "" {
-		query = query.Where("status = ?", params.Status)
-	}
-
-	err := query.Limit(*params.Limit).
+	err := h.Conn.
+		Limit(*params.Limit).
 		Offset(*params.Offset).
 		Find(value).Error
 

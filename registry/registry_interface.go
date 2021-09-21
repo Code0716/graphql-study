@@ -13,10 +13,10 @@ type Getter interface {
 
 // RepositoryGetter gets registered repository instances.
 type RepositoryGetter interface {
-	MembersRepository() repository.MembersInterface
+	PersonsRepository() repository.PersonsInterface
 }
 
 // InteractorGetter gets registered interactor instances.
 type InteractorGetter interface {
-	MembersInteractor() *interactor.MembersInteractor
+	PersonsInteractor() *interactor.PersonsInteractor
 }

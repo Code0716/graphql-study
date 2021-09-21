@@ -5,46 +5,61 @@ package graph
 
 import (
 	"context"
+	"fmt"
+	"time"
 
 	"github.com/Code0716/graphql-study/domain"
 	"github.com/Code0716/graphql-study/graph/generated"
 	"github.com/Code0716/graphql-study/graph/model"
+	"github.com/Code0716/graphql-study/util"
 )
 
-func (r *mutationResolver) CreateMember(ctx context.Context, input model.CreateMember) (*model.Member, error) {
-	membersInteractor := r.Reg.MembersInteractor()
+func (r *mutationResolver) CreatePerson(ctx context.Context, input model.CreatePerson) (*model.Person, error) {
+	personsInteractor := r.Reg.PersonsInteractor()
 
-	newMember := domain.Member{
+	birthday := new(time.Time)
+	if *input.Birthday != "" && input.Birthday != nil {
+		*birthday = util.TimeFromStr(*input.Birthday)
+	} else {
+		birthday = nil
+	}
+
+	newPerson := domain.Person{
 		Name:        input.Name,
 		Address:     *input.Address,
 		PhoneNumber: *input.PhoneNumber,
-		Status:      *input.Status,
-		Birthday:    input.Birthday,
+		ClassName:   *input.ClassName,
+		Birthday:    birthday,
 	}
-	m, err := membersInteractor.RegistMember(ctx, newMember)
+	m, err := personsInteractor.RegistPerson(ctx, newPerson)
 
 	if err != nil {
 		return nil, err
 	}
-	result := model.Member{
+	result := model.Person{
 		ID:          m.ID,
-		MemberID:    m.MemberID,
+		PersonID:    m.PersonID,
 		Name:        m.Name,
 		Address:     m.Address,
 		PhoneNumber: m.PhoneNumber,
-		Status:      m.Status,
+		ClassName:   m.ClassName,
 		Birthday:    m.Birthday,
 		CreatedAt:   m.CreatedAt,
 		UpdatedAt:   m.UpdatedAt,
 		DeletedAt:   m.DeletedAt,
 	}
+
 	return &result, nil
 }
 
-func (r *queryResolver) Members(ctx context.Context, input *model.Pager) ([]*model.Member, error) {
+func (r *mutationResolver) CreateClassification(ctx context.Context, input model.CreateClassification) (*model.CommonSuccessResponse, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Persons(ctx context.Context, input *model.Pager) ([]*model.Person, error) {
 	var limit int
 	if input.Limit != nil {
-		limit = int(*input.Limit)
+		limit = *input.Limit
 	}
 
 	if limit <= 0 || 50 < limit {
@@ -53,69 +68,73 @@ func (r *queryResolver) Members(ctx context.Context, input *model.Pager) ([]*mod
 
 	var offset int
 	if input.Offset != nil {
-		offset = int(*input.Offset)
+		offset = *input.Offset
 	}
 
-	var status string
-	if input.Status != nil {
-		status = string(*input.Status)
+	var className string
+	if input.ClassName != nil {
+		className = *input.ClassName
 	}
 
 	params := domain.Pager{
-		Limit:  &limit,
-		Offset: &offset,
-		Status: &status,
+		Limit:     &limit,
+		Offset:    &offset,
+		ClassName: &className,
 	}
-	membersInteractor := r.Reg.MembersInteractor()
-	result, err := membersInteractor.GetAllMembers(ctx, params)
+	personsInteractor := r.Reg.PersonsInteractor()
+	result, err := personsInteractor.GetAllPersons(ctx, params)
 
-	membersList := make([]*model.Member, 0, len(result))
+	personsList := make([]*model.Person, 0, len(result))
 	if err != nil {
 		return nil, err
 	}
 
 	for _, item := range result {
-		member := model.Member{
+		person := model.Person{
 			ID:          item.ID,
-			MemberID:    item.MemberID,
+			PersonID:    item.PersonID,
 			Name:        item.Name,
 			Address:     item.Address,
 			PhoneNumber: item.PhoneNumber,
-			Status:      item.Status,
+			ClassName:   item.ClassName,
 			CreatedAt:   item.CreatedAt,
 			UpdatedAt:   item.UpdatedAt,
 			DeletedAt:   item.DeletedAt,
 		}
-		membersList = append(membersList, &member)
+		personsList = append(personsList, &person)
 	}
 
-	return membersList, nil
+	return personsList, nil
 }
 
-func (r *queryResolver) Member(ctx context.Context, input model.GetMemberParams) (*model.Member, error) {
-	membersInteractor := r.Reg.MembersInteractor()
-	params := domain.GetMemberParams{
+func (r *queryResolver) Person(ctx context.Context, input model.GetPersonParams) (*model.Person, error) {
+	personsInteractor := r.Reg.PersonsInteractor()
+	params := domain.GetPersonParams{
 		ID:   input.ID,
 		Name: input.Name,
 	}
 
-	m, err := membersInteractor.GetMember(ctx, params)
+	m, err := personsInteractor.GetPerson(ctx, params)
 	if err != nil {
 		return nil, err
 	}
-	result := model.Member{
+	result := model.Person{
 		ID:          m.ID,
-		MemberID:    m.MemberID,
+		PersonID:    m.PersonID,
 		Name:        m.Name,
 		Address:     m.Address,
 		PhoneNumber: m.PhoneNumber,
-		Status:      m.Status,
+		ClassName:   m.ClassName,
 		CreatedAt:   m.CreatedAt,
 		UpdatedAt:   m.UpdatedAt,
 		DeletedAt:   m.DeletedAt,
 	}
 
 	return &result, nil
+}
+
+func (r *queryResolver) Classifications(ctx context.Context, input *model.Pager) ([]*model.Classification, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Mutation returns generated.MutationResolver implementation.

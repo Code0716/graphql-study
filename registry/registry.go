@@ -21,13 +21,13 @@ func New(db repository.SQLHandlerInterface) *Registry {
 	以下に具体的な依存性を解決する初期化処理を書く
 */
 
-// MembersRepository returns members repository.
-func (r *Registry) MembersRepository() repository.MembersInterface {
-	return repository.NewMembers(r.db)
+// PersonsRepository returns persons repository.
+func (r *Registry) PersonsRepository() repository.PersonsInterface {
+	return repository.NewPersons(r.db)
 }
 
-// MembersInteractor returns members interactor.
-func (r *Registry) MembersInteractor() *interactor.MembersInteractor {
+// PersonsInteractor returns persons interactor.
+func (r *Registry) PersonsInteractor() *interactor.PersonsInteractor {
 
-	return interactor.NewMembers(r.MembersRepository())
+	return interactor.NewPersons(r.PersonsRepository())
 }

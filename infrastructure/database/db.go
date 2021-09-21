@@ -26,6 +26,7 @@ func NewDBConn(env util.Environment) (conn *sql.DB, close func() error, err erro
 	if err != nil {
 		return nil, nil, err
 	}
+
 	close = func() error {
 		if err := sqlDB.Close(); err != nil {
 			return err
