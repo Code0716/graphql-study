@@ -14,49 +14,73 @@ import (
 	"github.com/Code0716/graphql-study/util"
 )
 
-func (r *mutationResolver) CreatePerson(ctx context.Context, input model.CreatePerson) (*model.Person, error) {
+func (r *mutationResolver) CreatePerson(ctx context.Context, input model.CreatePerson) (*model.CommonResponse, error) {
 	personsInteractor := r.Reg.PersonsInteractor()
-
-	birthday := new(time.Time)
-	if *input.Birthday != "" && input.Birthday != nil {
-		*birthday = util.TimeFromStr(*input.Birthday)
-	} else {
-		birthday = nil
-	}
 
 	newPerson := domain.Person{
 		Name:        input.Name,
 		Address:     *input.Address,
 		PhoneNumber: *input.PhoneNumber,
 		ClassName:   *input.ClassName,
-		Birthday:    birthday,
 	}
 	m, err := personsInteractor.RegistPerson(ctx, newPerson)
 
 	if err != nil {
 		return nil, err
 	}
-	result := model.Person{
-		ID:          m.ID,
-		PersonID:    m.PersonID,
-		Name:        m.Name,
-		Address:     m.Address,
-		PhoneNumber: m.PhoneNumber,
-		ClassName:   m.ClassName,
-		Birthday:    m.Birthday,
-		CreatedAt:   m.CreatedAt,
-		UpdatedAt:   m.UpdatedAt,
-		DeletedAt:   m.DeletedAt,
-	}
-
-	return &result, nil
+	response := model.CommonResponse{Message: fmt.Sprintf(`Create Success name %s ID %s`, m.Name, m.PersonID)}
+	return &response, nil
 }
 
-func (r *mutationResolver) CreateClassification(ctx context.Context, input model.CreateClassification) (*model.CommonSuccessResponse, error) {
+func (r *mutationResolver) UpdatePerson(ctx context.Context, input model.CreatePerson) (*model.Person, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) Persons(ctx context.Context, input *model.Pager) ([]*model.Person, error) {
+func (r *mutationResolver) DeletePerson(ctx context.Context, personID string) (*model.Person, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CreateClassification(ctx context.Context, input model.CreateClassification) (*model.Classification, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeleteClassification(ctx context.Context, classID string) (*model.CommonResponse, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) CreateTestimony(ctx context.Context, input model.CreateTestimony) (*model.CommonResponse, error) {
+	testimonyInteractor := r.Reg.TestimonyInteractor()
+
+	if isValid := util.IsValidUUID(input.PersonID); !isValid {
+		return nil, fmt.Errorf("invald parson id")
+	}
+
+	status := domain.GetGetTestimonyStatus(input.Status)
+	params := domain.Testimony{
+		PersonID:  input.PersonID,
+		Testimony: input.Testimony,
+		Status:    status,
+	}
+	testimony, err := testimonyInteractor.RegistTestimony(ctx, params)
+	if err != nil {
+		return nil, err
+	}
+
+	result := model.CommonResponse{
+		Message: fmt.Sprintf("created %s", testimony.TestimonyID),
+	}
+	return &result, nil
+}
+
+func (r *mutationResolver) UpdateTestimony(ctx context.Context, input model.UpdateTestimony) (*model.Testimony, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeleteTestimony(ctx context.Context, testimonyID string) (*model.CommonResponse, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GetPersons(ctx context.Context, input *model.PersonPager) ([]*model.Person, error) {
 	var limit int
 	if input.Limit != nil {
 		limit = *input.Limit
@@ -76,11 +100,12 @@ func (r *queryResolver) Persons(ctx context.Context, input *model.Pager) ([]*mod
 		className = *input.ClassName
 	}
 
-	params := domain.Pager{
+	params := domain.PersonPager{
 		Limit:     &limit,
 		Offset:    &offset,
 		ClassName: &className,
 	}
+
 	personsInteractor := r.Reg.PersonsInteractor()
 	result, err := personsInteractor.GetAllPersons(ctx, params)
 
@@ -107,7 +132,7 @@ func (r *queryResolver) Persons(ctx context.Context, input *model.Pager) ([]*mod
 	return personsList, nil
 }
 
-func (r *queryResolver) Person(ctx context.Context, input model.GetPersonParams) (*model.Person, error) {
+func (r *queryResolver) GetPerson(ctx context.Context, input model.GetPersonParams) (*model.Person, error) {
 	personsInteractor := r.Reg.PersonsInteractor()
 	params := domain.GetPersonParams{
 		ID:   input.ID,
@@ -133,7 +158,85 @@ func (r *queryResolver) Person(ctx context.Context, input model.GetPersonParams)
 	return &result, nil
 }
 
-func (r *queryResolver) Classifications(ctx context.Context, input *model.Pager) ([]*model.Classification, error) {
+func (r *queryResolver) Classifications(ctx context.Context, input model.Pager) ([]*model.Classification, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) GetTestimonies(ctx context.Context, params *model.GetTestimonyParams, pager model.Pager) ([]*model.Testimony, error) {
+	var limit int
+	if pager.Limit != nil {
+		limit = *pager.Limit
+	}
+
+	if limit <= 0 || 50 < limit {
+		limit = 50
+	}
+
+	var offset int
+	if pager.Offset != nil {
+		offset = *pager.Offset
+	}
+
+	newPager := domain.Pager{
+		Limit:  &limit,
+		Offset: &offset,
+	}
+
+	testimonyInteractor := r.Reg.TestimonyInteractor()
+
+	var personID string
+	if params.PersonID != nil {
+		personID = *params.PersonID
+	}
+
+	var status string
+	if params.Status != nil {
+		status = domain.GetGetTestimonyStatus(*params.Status)
+	}
+
+	var testimonyID string
+	if params.TestimonyID != nil {
+		testimonyID = *params.TestimonyID
+	}
+
+	var createdAt time.Time
+	if params.CreatedAt != nil {
+		createdAt = *params.CreatedAt
+
+	}
+
+	newParams := domain.GetTestimonyParams{
+		TestimonyID: &testimonyID,
+		PersonID:    &personID,
+		Status:      &status,
+		CreatedAt:   &createdAt,
+	}
+
+	result, err := testimonyInteractor.GetAllTestimony(ctx, newPager, newParams)
+	if err != nil {
+		return nil, err
+	}
+
+	testimonyList := make([]*model.Testimony, 0, len(result))
+
+	for _, item := range result {
+		person := model.Testimony{
+			ID:          item.ID,
+			PersonID:    item.PersonID,
+			TestimonyID: item.TestimonyID,
+			Testimony:   item.Testimony,
+			Status:      item.Status,
+			CreatedAt:   item.CreatedAt,
+			UpdatedAt:   item.UpdatedAt,
+			DeletedAt:   item.DeletedAt,
+		}
+		testimonyList = append(testimonyList, &person)
+	}
+
+	return testimonyList, nil
+}
+
+func (r *queryResolver) GetTestimony(ctx context.Context, pager model.Pager) (*model.Testimony, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

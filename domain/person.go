@@ -8,6 +8,9 @@ type Person model.Person
 // GetPersonParams model
 type GetPersonParams model.GetPersonParams
 
+// PersonPager parer
+type PersonPager model.PersonPager
+
 // TableName get Person table name
 func (m Person) TableName() string {
 	return "person"

@@ -14,9 +14,11 @@ type Getter interface {
 // RepositoryGetter gets registered repository instances.
 type RepositoryGetter interface {
 	PersonsRepository() repository.PersonsInterface
+	TestimonyRepository() repository.TestimonyInterface
 }
 
 // InteractorGetter gets registered interactor instances.
 type InteractorGetter interface {
 	PersonsInteractor() *interactor.PersonsInteractor
+	TestimonyInteractor() *interactor.TestimonyInteractor
 }

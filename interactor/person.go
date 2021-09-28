@@ -25,7 +25,7 @@ func NewPersons(
 
 // GetAllPersons returns person list
 // im: persons interactor
-func (im *PersonsInteractor) GetAllPersons(ctx context.Context, params domain.Pager) ([]*domain.Person, error) {
+func (im *PersonsInteractor) GetAllPersons(ctx context.Context, params domain.PersonPager) ([]*domain.Person, error) {
 	personList, err := im.PersonsRepository.GetAllPersons(ctx, params)
 	if err != nil {
 		return nil, err
@@ -53,13 +53,10 @@ func (im *PersonsInteractor) RegistPerson(ctx context.Context, params domain.Per
 	params.UpdatedAt = currentTime
 	params.PersonID = uuid.NewV4().String()
 
-	if params.Birthday == nil {
-		params.Birthday = nil
-	}
-
 	person, err := im.PersonsRepository.CreatePerson(ctx, params)
 	if err != nil {
 		return nil, err
 	}
+
 	return person, nil
 }

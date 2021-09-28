@@ -31,3 +31,14 @@ func (r *Registry) PersonsInteractor() *interactor.PersonsInteractor {
 
 	return interactor.NewPersons(r.PersonsRepository())
 }
+
+// TestimonyRepository returns Testimony repository.
+func (r *Registry) TestimonyRepository() repository.TestimonyInterface {
+	return repository.NewTestimony(r.db)
+}
+
+// TestimonyInteractor returns Testimony interactor.
+func (r *Registry) TestimonyInteractor() *interactor.TestimonyInteractor {
+
+	return interactor.NewTestimony(r.TestimonyRepository())
+}

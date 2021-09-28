@@ -9,7 +9,7 @@ import (
 // PersonsInterface  is data access methods to Persons.
 type PersonsInterface interface {
 	CreatePerson(ctx context.Context, person domain.Person) (*domain.Person, error)
-	GetAllPersons(ctx context.Context, params domain.Pager) ([]*domain.Person, error)
+	GetAllPersons(ctx context.Context, pager domain.PersonPager) ([]*domain.Person, error)
 	GetPerson(ctx context.Context, params domain.GetPersonParams) (*domain.Person, error)
 }
 
@@ -47,9 +47,14 @@ func (r *PersonsRepository) GetPerson(ctx context.Context, params domain.GetPers
 }
 
 // GetAllPersons return persons found by params
-func (r *PersonsRepository) GetAllPersons(ctx context.Context, params domain.Pager) ([]*domain.Person, error) {
+func (r *PersonsRepository) GetAllPersons(ctx context.Context, personPager domain.PersonPager) ([]*domain.Person, error) {
 	var persons []*domain.Person
-	err := r.SQLHandler.Find(&persons, params)
+
+	pager := domain.Pager{
+		Limit:  personPager.Limit,
+		Offset: personPager.Offset,
+	}
+	err := r.SQLHandler.Find(&persons, pager, domain.Person{ClassName: *personPager.ClassName})
 
 	if err != nil {
 		return nil, err

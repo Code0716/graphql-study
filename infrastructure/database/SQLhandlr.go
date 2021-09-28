@@ -22,11 +22,11 @@ func (h SQLHandler) Create(value interface{}) error {
 }
 
 // Find gorm find
-func (h SQLHandler) Find(value interface{}, params domain.Pager) error {
+func (h SQLHandler) Find(value interface{}, pager domain.Pager, where ...interface{}) error {
 	err := h.Conn.
-		Limit(*params.Limit).
-		Offset(*params.Offset).
-		Find(value).Error
+		Limit(*pager.Limit).
+		Offset(*pager.Offset).
+		Find(value, where...).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return gorm.ErrRecordNotFound
@@ -94,4 +94,20 @@ func (h *SQLHandler) Delete(value interface{}, where ...interface{}) error {
 func (h *SQLHandler) Where(query interface{}, args ...interface{}) error {
 	err := h.Conn.Where(query, args...).Error
 	return err
+}
+
+func (h SQLHandler) IsExist(tableName string, query interface{}, args ...interface{}) (bool, error) {
+	var count int64
+
+	err := h.Conn.Table(tableName).
+		Where(query, args...).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+
+	if count > 0 {
+		return true, nil
+	}
+	return false, nil
 }

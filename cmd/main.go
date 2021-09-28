@@ -66,11 +66,7 @@ func start() int {
 		return nil
 	})
 
-	// TODO:developのときに表出するようにする。
 	for _, r := range e.Routes() {
-		if r.Path == "" || r.Path == "/api/v1" || r.Path == "/api/v1/*" {
-			continue
-		}
 		fmt.Printf("[%v] %+v\n", r.Method, r.Path)
 	}
 	addr := util.GetAPIPath(env)

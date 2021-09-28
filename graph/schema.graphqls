@@ -9,14 +9,9 @@ type Person {
   address: String!
   phone_number: String!
   class_name: String!
-  birthday: Time
   created_at: Time!
   updated_at: Time!
   deleted_at: Time
-}
-
-type CommonSuccessResponse {
-  message: String!
 }
 
 type Classification {
@@ -28,38 +23,102 @@ type Classification {
   deleted_at: Time
 }
 
+type Testimony {
+  id: Int!
+  testimony_id: ID!
+  person_id: String!
+  testimony: String!
+  status: String!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+}
+type CommonResponse {
+  Message: String!
+}
+
 input GetPersonParams {
   id: ID
   name: String
 }
 
 input CreatePerson {
+  id: Int
+  person_id: ID
   name: String!
   address: String
   phone_number: String
   class_name: String
-  birthday: String
 }
 
-input CreateClassification {
+input updatePerson {
+  id: Int!
+  person_id: ID!
+  name: String!
+  address: String
+  phone_number: String
   class_name: String!
 }
 
+input CreateClassification {
+  class_id: ID
+  class_name: String!
+}
+
+input createTestimony {
+  id: Int
+  testimony_id: ID
+  person_id: String!
+  testimony: String!
+  status: String!
+}
+
+input updateTestimony {
+  id: Int!
+  testimony_id: ID!
+  person_id: String!
+  testimony: String!
+  status: String!
+}
+
+input GetTestimonyParams {
+  testimony_id: ID
+  person_id: String
+  status: String
+  created_at: Time
+}
+
 input Pager {
+  limit: Int
+  offset: Int
+}
+
+input PersonPager {
   limit: Int
   offset: Int
   class_name: String
 }
 
 type Query {
-  persons(input: Pager): [Person!]!
-  person(input: GetPersonParams!): Person!
-  classifications(input: Pager): [Classification!]!
+  getPersons(input: PersonPager): [Person!]!
+  getPerson(input: GetPersonParams!): Person!
+  classifications(input: Pager!): [Classification!]!
+  getTestimonies(params: GetTestimonyParams, pager: Pager!): [Testimony]!
+  getTestimony(pager: Pager!): Testimony!
 }
 
 type Mutation {
-  createPerson(input: CreatePerson!): Person!
-  createClassification(input: CreateClassification!): CommonSuccessResponse!
+  # person
+  createPerson(input: CreatePerson!): CommonResponse
+  updatePerson(input: CreatePerson!): Person!
+  deletePerson(person_id: String!): Person!
+  # classification
+  createClassification(input: CreateClassification!): Classification!
+  deleteClassification(classId: String!): CommonResponse
+  # testimony
+  createTestimony(input: createTestimony!): CommonResponse
+  updateTestimony(input: updateTestimony!): Testimony!
+  deleteTestimony(testimony_id: String!): CommonResponse
 }
 
 scalar Date
@@ -68,3 +127,9 @@ scalar Map
 scalar Upload
 scalar Any
 scalar YesNo
+
+enum TestimonyStatus {
+  DRAFT
+  PUBLIC
+  OTHER
+}

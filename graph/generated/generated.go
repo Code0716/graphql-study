@@ -53,18 +53,23 @@ type ComplexityRoot struct {
 		UpdatedAt func(childComplexity int) int
 	}
 
-	CommonSuccessResponse struct {
+	CommonResponse struct {
 		Message func(childComplexity int) int
 	}
 
 	Mutation struct {
 		CreateClassification func(childComplexity int, input model.CreateClassification) int
 		CreatePerson         func(childComplexity int, input model.CreatePerson) int
+		CreateTestimony      func(childComplexity int, input model.CreateTestimony) int
+		DeleteClassification func(childComplexity int, classID string) int
+		DeletePerson         func(childComplexity int, personID string) int
+		DeleteTestimony      func(childComplexity int, testimonyID string) int
+		UpdatePerson         func(childComplexity int, input model.CreatePerson) int
+		UpdateTestimony      func(childComplexity int, input model.UpdateTestimony) int
 	}
 
 	Person struct {
 		Address     func(childComplexity int) int
-		Birthday    func(childComplexity int) int
 		ClassName   func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
 		DeletedAt   func(childComplexity int) int
@@ -76,20 +81,41 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Classifications func(childComplexity int, input *model.Pager) int
-		Person          func(childComplexity int, input model.GetPersonParams) int
-		Persons         func(childComplexity int, input *model.Pager) int
+		Classifications func(childComplexity int, input model.Pager) int
+		GetPerson       func(childComplexity int, input model.GetPersonParams) int
+		GetPersons      func(childComplexity int, input *model.PersonPager) int
+		GetTestimonies  func(childComplexity int, params *model.GetTestimonyParams, pager model.Pager) int
+		GetTestimony    func(childComplexity int, pager model.Pager) int
+	}
+
+	Testimony struct {
+		CreatedAt   func(childComplexity int) int
+		DeletedAt   func(childComplexity int) int
+		ID          func(childComplexity int) int
+		PersonID    func(childComplexity int) int
+		Status      func(childComplexity int) int
+		Testimony   func(childComplexity int) int
+		TestimonyID func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
-	CreatePerson(ctx context.Context, input model.CreatePerson) (*model.Person, error)
-	CreateClassification(ctx context.Context, input model.CreateClassification) (*model.CommonSuccessResponse, error)
+	CreatePerson(ctx context.Context, input model.CreatePerson) (*model.CommonResponse, error)
+	UpdatePerson(ctx context.Context, input model.CreatePerson) (*model.Person, error)
+	DeletePerson(ctx context.Context, personID string) (*model.Person, error)
+	CreateClassification(ctx context.Context, input model.CreateClassification) (*model.Classification, error)
+	DeleteClassification(ctx context.Context, classID string) (*model.CommonResponse, error)
+	CreateTestimony(ctx context.Context, input model.CreateTestimony) (*model.CommonResponse, error)
+	UpdateTestimony(ctx context.Context, input model.UpdateTestimony) (*model.Testimony, error)
+	DeleteTestimony(ctx context.Context, testimonyID string) (*model.CommonResponse, error)
 }
 type QueryResolver interface {
-	Persons(ctx context.Context, input *model.Pager) ([]*model.Person, error)
-	Person(ctx context.Context, input model.GetPersonParams) (*model.Person, error)
-	Classifications(ctx context.Context, input *model.Pager) ([]*model.Classification, error)
+	GetPersons(ctx context.Context, input *model.PersonPager) ([]*model.Person, error)
+	GetPerson(ctx context.Context, input model.GetPersonParams) (*model.Person, error)
+	Classifications(ctx context.Context, input model.Pager) ([]*model.Classification, error)
+	GetTestimonies(ctx context.Context, params *model.GetTestimonyParams, pager model.Pager) ([]*model.Testimony, error)
+	GetTestimony(ctx context.Context, pager model.Pager) (*model.Testimony, error)
 }
 
 type executableSchema struct {
@@ -149,12 +175,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Classification.UpdatedAt(childComplexity), true
 
-	case "CommonSuccessResponse.message":
-		if e.complexity.CommonSuccessResponse.Message == nil {
+	case "CommonResponse.Message":
+		if e.complexity.CommonResponse.Message == nil {
 			break
 		}
 
-		return e.complexity.CommonSuccessResponse.Message(childComplexity), true
+		return e.complexity.CommonResponse.Message(childComplexity), true
 
 	case "Mutation.createClassification":
 		if e.complexity.Mutation.CreateClassification == nil {
@@ -180,19 +206,84 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreatePerson(childComplexity, args["input"].(model.CreatePerson)), true
 
+	case "Mutation.createTestimony":
+		if e.complexity.Mutation.CreateTestimony == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTestimony_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTestimony(childComplexity, args["input"].(model.CreateTestimony)), true
+
+	case "Mutation.deleteClassification":
+		if e.complexity.Mutation.DeleteClassification == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteClassification_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteClassification(childComplexity, args["classId"].(string)), true
+
+	case "Mutation.deletePerson":
+		if e.complexity.Mutation.DeletePerson == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deletePerson_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeletePerson(childComplexity, args["person_id"].(string)), true
+
+	case "Mutation.deleteTestimony":
+		if e.complexity.Mutation.DeleteTestimony == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteTestimony_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteTestimony(childComplexity, args["testimony_id"].(string)), true
+
+	case "Mutation.updatePerson":
+		if e.complexity.Mutation.UpdatePerson == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePerson_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdatePerson(childComplexity, args["input"].(model.CreatePerson)), true
+
+	case "Mutation.updateTestimony":
+		if e.complexity.Mutation.UpdateTestimony == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTestimony_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTestimony(childComplexity, args["input"].(model.UpdateTestimony)), true
+
 	case "Person.address":
 		if e.complexity.Person.Address == nil {
 			break
 		}
 
 		return e.complexity.Person.Address(childComplexity), true
-
-	case "Person.birthday":
-		if e.complexity.Person.Birthday == nil {
-			break
-		}
-
-		return e.complexity.Person.Birthday(childComplexity), true
 
 	case "Person.class_name":
 		if e.complexity.Person.ClassName == nil {
@@ -260,31 +351,111 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.Classifications(childComplexity, args["input"].(*model.Pager)), true
+		return e.complexity.Query.Classifications(childComplexity, args["input"].(model.Pager)), true
 
-	case "Query.person":
-		if e.complexity.Query.Person == nil {
+	case "Query.getPerson":
+		if e.complexity.Query.GetPerson == nil {
 			break
 		}
 
-		args, err := ec.field_Query_person_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_getPerson_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.Person(childComplexity, args["input"].(model.GetPersonParams)), true
+		return e.complexity.Query.GetPerson(childComplexity, args["input"].(model.GetPersonParams)), true
 
-	case "Query.persons":
-		if e.complexity.Query.Persons == nil {
+	case "Query.getPersons":
+		if e.complexity.Query.GetPersons == nil {
 			break
 		}
 
-		args, err := ec.field_Query_persons_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_getPersons_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.Persons(childComplexity, args["input"].(*model.Pager)), true
+		return e.complexity.Query.GetPersons(childComplexity, args["input"].(*model.PersonPager)), true
+
+	case "Query.getTestimonies":
+		if e.complexity.Query.GetTestimonies == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getTestimonies_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetTestimonies(childComplexity, args["params"].(*model.GetTestimonyParams), args["pager"].(model.Pager)), true
+
+	case "Query.getTestimony":
+		if e.complexity.Query.GetTestimony == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getTestimony_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetTestimony(childComplexity, args["pager"].(model.Pager)), true
+
+	case "Testimony.created_at":
+		if e.complexity.Testimony.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Testimony.CreatedAt(childComplexity), true
+
+	case "Testimony.deleted_at":
+		if e.complexity.Testimony.DeletedAt == nil {
+			break
+		}
+
+		return e.complexity.Testimony.DeletedAt(childComplexity), true
+
+	case "Testimony.id":
+		if e.complexity.Testimony.ID == nil {
+			break
+		}
+
+		return e.complexity.Testimony.ID(childComplexity), true
+
+	case "Testimony.person_id":
+		if e.complexity.Testimony.PersonID == nil {
+			break
+		}
+
+		return e.complexity.Testimony.PersonID(childComplexity), true
+
+	case "Testimony.status":
+		if e.complexity.Testimony.Status == nil {
+			break
+		}
+
+		return e.complexity.Testimony.Status(childComplexity), true
+
+	case "Testimony.testimony":
+		if e.complexity.Testimony.Testimony == nil {
+			break
+		}
+
+		return e.complexity.Testimony.Testimony(childComplexity), true
+
+	case "Testimony.testimony_id":
+		if e.complexity.Testimony.TestimonyID == nil {
+			break
+		}
+
+		return e.complexity.Testimony.TestimonyID(childComplexity), true
+
+	case "Testimony.updated_at":
+		if e.complexity.Testimony.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Testimony.UpdatedAt(childComplexity), true
 
 	}
 	return 0, false
@@ -361,14 +532,9 @@ type Person {
   address: String!
   phone_number: String!
   class_name: String!
-  birthday: Time
   created_at: Time!
   updated_at: Time!
   deleted_at: Time
-}
-
-type CommonSuccessResponse {
-  message: String!
 }
 
 type Classification {
@@ -380,38 +546,102 @@ type Classification {
   deleted_at: Time
 }
 
+type Testimony {
+  id: Int!
+  testimony_id: ID!
+  person_id: String!
+  testimony: String!
+  status: String!
+  created_at: Time!
+  updated_at: Time!
+  deleted_at: Time
+}
+type CommonResponse {
+  Message: String!
+}
+
 input GetPersonParams {
   id: ID
   name: String
 }
 
 input CreatePerson {
+  id: Int
+  person_id: ID
   name: String!
   address: String
   phone_number: String
   class_name: String
-  birthday: String
 }
 
-input CreateClassification {
+input updatePerson {
+  id: Int!
+  person_id: ID!
+  name: String!
+  address: String
+  phone_number: String
   class_name: String!
 }
 
+input CreateClassification {
+  class_id: ID
+  class_name: String!
+}
+
+input createTestimony {
+  id: Int
+  testimony_id: ID
+  person_id: String!
+  testimony: String!
+  status: String!
+}
+
+input updateTestimony {
+  id: Int!
+  testimony_id: ID!
+  person_id: String!
+  testimony: String!
+  status: String!
+}
+
+input GetTestimonyParams {
+  testimony_id: ID
+  person_id: String
+  status: String
+  created_at: Time
+}
+
 input Pager {
+  limit: Int
+  offset: Int
+}
+
+input PersonPager {
   limit: Int
   offset: Int
   class_name: String
 }
 
 type Query {
-  persons(input: Pager): [Person!]!
-  person(input: GetPersonParams!): Person!
-  classifications(input: Pager): [Classification!]!
+  getPersons(input: PersonPager): [Person!]!
+  getPerson(input: GetPersonParams!): Person!
+  classifications(input: Pager!): [Classification!]!
+  getTestimonies(params: GetTestimonyParams, pager: Pager!): [Testimony]!
+  getTestimony(pager: Pager!): Testimony!
 }
 
 type Mutation {
-  createPerson(input: CreatePerson!): Person!
-  createClassification(input: CreateClassification!): CommonSuccessResponse!
+  # person
+  createPerson(input: CreatePerson!): CommonResponse
+  updatePerson(input: CreatePerson!): Person!
+  deletePerson(person_id: String!): Person!
+  # classification
+  createClassification(input: CreateClassification!): Classification!
+  deleteClassification(classId: String!): CommonResponse
+  # testimony
+  createTestimony(input: createTestimony!): CommonResponse
+  updateTestimony(input: updateTestimony!): Testimony!
+  deleteTestimony(testimony_id: String!): CommonResponse
 }
 
 scalar Date
@@ -420,6 +650,12 @@ scalar Map
 scalar Upload
 scalar Any
 scalar YesNo
+
+enum TestimonyStatus {
+  DRAFT
+  PUBLIC
+  OTHER
+}
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -458,6 +694,96 @@ func (ec *executionContext) field_Mutation_createPerson_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createTestimony_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.CreateTestimony
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNcreateTestimony2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCreateTestimony(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteClassification_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["classId"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("classId"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["classId"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deletePerson_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["person_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("person_id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["person_id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteTestimony_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["testimony_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("testimony_id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["testimony_id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updatePerson_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.CreatePerson
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreatePerson2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCreatePerson(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTestimony_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.UpdateTestimony
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNupdateTestimony2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐUpdateTestimony(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -476,10 +802,10 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_classifications_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.Pager
+	var arg0 model.Pager
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOPager2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPager(ctx, tmp)
+		arg0, err = ec.unmarshalNPager2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPager(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -488,7 +814,7 @@ func (ec *executionContext) field_Query_classifications_args(ctx context.Context
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_person_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getPerson_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 model.GetPersonParams
@@ -503,18 +829,57 @@ func (ec *executionContext) field_Query_person_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_persons_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getPersons_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.Pager
+	var arg0 *model.PersonPager
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOPager2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPager(ctx, tmp)
+		arg0, err = ec.unmarshalOPersonPager2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPersonPager(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTestimonies_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.GetTestimonyParams
+	if tmp, ok := rawArgs["params"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("params"))
+		arg0, err = ec.unmarshalOGetTestimonyParams2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐGetTestimonyParams(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["params"] = arg0
+	var arg1 model.Pager
+	if tmp, ok := rawArgs["pager"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pager"))
+		arg1, err = ec.unmarshalNPager2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPager(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pager"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getTestimony_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.Pager
+	if tmp, ok := rawArgs["pager"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pager"))
+		arg0, err = ec.unmarshalNPager2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPager(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["pager"] = arg0
 	return args, nil
 }
 
@@ -763,7 +1128,7 @@ func (ec *executionContext) _Classification_deleted_at(ctx context.Context, fiel
 	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _CommonSuccessResponse_message(ctx context.Context, field graphql.CollectedField, obj *model.CommonSuccessResponse) (ret graphql.Marshaler) {
+func (ec *executionContext) _CommonResponse_Message(ctx context.Context, field graphql.CollectedField, obj *model.CommonResponse) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -771,7 +1136,7 @@ func (ec *executionContext) _CommonSuccessResponse_message(ctx context.Context, 
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:     "CommonSuccessResponse",
+		Object:     "CommonResponse",
 		Field:      field,
 		Args:       nil,
 		IsMethod:   false,
@@ -830,6 +1195,87 @@ func (ec *executionContext) _Mutation_createPerson(ctx context.Context, field gr
 		return graphql.Null
 	}
 	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.CommonResponse)
+	fc.Result = res
+	return ec.marshalOCommonResponse2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCommonResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updatePerson(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updatePerson_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdatePerson(rctx, args["input"].(model.CreatePerson))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Person)
+	fc.Result = res
+	return ec.marshalNPerson2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPerson(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deletePerson(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deletePerson_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeletePerson(rctx, args["person_id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
 		if !graphql.HasFieldError(ctx, fc) {
 			ec.Errorf(ctx, "must not be null")
 		}
@@ -877,9 +1323,168 @@ func (ec *executionContext) _Mutation_createClassification(ctx context.Context, 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model.CommonSuccessResponse)
+	res := resTmp.(*model.Classification)
 	fc.Result = res
-	return ec.marshalNCommonSuccessResponse2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCommonSuccessResponse(ctx, field.Selections, res)
+	return ec.marshalNClassification2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐClassification(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteClassification(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteClassification_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteClassification(rctx, args["classId"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.CommonResponse)
+	fc.Result = res
+	return ec.marshalOCommonResponse2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCommonResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createTestimony(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createTestimony_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTestimony(rctx, args["input"].(model.CreateTestimony))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.CommonResponse)
+	fc.Result = res
+	return ec.marshalOCommonResponse2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCommonResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_updateTestimony(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_updateTestimony_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTestimony(rctx, args["input"].(model.UpdateTestimony))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Testimony)
+	fc.Result = res
+	return ec.marshalNTestimony2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐTestimony(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_deleteTestimony(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_deleteTestimony_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteTestimony(rctx, args["testimony_id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.CommonResponse)
+	fc.Result = res
+	return ec.marshalOCommonResponse2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCommonResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Person_id(ctx context.Context, field graphql.CollectedField, obj *model.Person) (ret graphql.Marshaler) {
@@ -1092,38 +1697,6 @@ func (ec *executionContext) _Person_class_name(ctx context.Context, field graphq
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Person_birthday(ctx context.Context, field graphql.CollectedField, obj *model.Person) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Person",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Birthday, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*time.Time)
-	fc.Result = res
-	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Person_created_at(ctx context.Context, field graphql.CollectedField, obj *model.Person) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1226,7 +1799,7 @@ func (ec *executionContext) _Person_deleted_at(ctx context.Context, field graphq
 	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_persons(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getPersons(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1243,7 +1816,7 @@ func (ec *executionContext) _Query_persons(ctx context.Context, field graphql.Co
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_persons_args(ctx, rawArgs)
+	args, err := ec.field_Query_getPersons_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1251,7 +1824,7 @@ func (ec *executionContext) _Query_persons(ctx context.Context, field graphql.Co
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Persons(rctx, args["input"].(*model.Pager))
+		return ec.resolvers.Query().GetPersons(rctx, args["input"].(*model.PersonPager))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1268,7 +1841,7 @@ func (ec *executionContext) _Query_persons(ctx context.Context, field graphql.Co
 	return ec.marshalNPerson2ᚕᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPersonᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_person(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getPerson(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1285,7 +1858,7 @@ func (ec *executionContext) _Query_person(ctx context.Context, field graphql.Col
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_person_args(ctx, rawArgs)
+	args, err := ec.field_Query_getPerson_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1293,7 +1866,7 @@ func (ec *executionContext) _Query_person(ctx context.Context, field graphql.Col
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Person(rctx, args["input"].(model.GetPersonParams))
+		return ec.resolvers.Query().GetPerson(rctx, args["input"].(model.GetPersonParams))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1335,7 +1908,7 @@ func (ec *executionContext) _Query_classifications(ctx context.Context, field gr
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Classifications(rctx, args["input"].(*model.Pager))
+		return ec.resolvers.Query().Classifications(rctx, args["input"].(model.Pager))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1350,6 +1923,90 @@ func (ec *executionContext) _Query_classifications(ctx context.Context, field gr
 	res := resTmp.([]*model.Classification)
 	fc.Result = res
 	return ec.marshalNClassification2ᚕᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐClassificationᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getTestimonies(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getTestimonies_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTestimonies(rctx, args["params"].(*model.GetTestimonyParams), args["pager"].(model.Pager))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Testimony)
+	fc.Result = res
+	return ec.marshalNTestimony2ᚕᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐTestimony(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getTestimony(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getTestimony_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTestimony(rctx, args["pager"].(model.Pager))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Testimony)
+	fc.Result = res
+	return ec.marshalNTestimony2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐTestimony(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1421,6 +2078,283 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	res := resTmp.(*introspection.Schema)
 	fc.Result = res
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Testimony_id(ctx context.Context, field graphql.CollectedField, obj *model.Testimony) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Testimony",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Testimony_testimony_id(ctx context.Context, field graphql.CollectedField, obj *model.Testimony) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Testimony",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TestimonyID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Testimony_person_id(ctx context.Context, field graphql.CollectedField, obj *model.Testimony) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Testimony",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PersonID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Testimony_testimony(ctx context.Context, field graphql.CollectedField, obj *model.Testimony) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Testimony",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Testimony, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Testimony_status(ctx context.Context, field graphql.CollectedField, obj *model.Testimony) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Testimony",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Status, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Testimony_created_at(ctx context.Context, field graphql.CollectedField, obj *model.Testimony) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Testimony",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Testimony_updated_at(ctx context.Context, field graphql.CollectedField, obj *model.Testimony) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Testimony",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Testimony_deleted_at(ctx context.Context, field graphql.CollectedField, obj *model.Testimony) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Testimony",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DeletedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalOTime2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -2554,6 +3488,14 @@ func (ec *executionContext) unmarshalInputCreateClassification(ctx context.Conte
 
 	for k, v := range asMap {
 		switch k {
+		case "class_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("class_id"))
+			it.ClassID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "class_name":
 			var err error
 
@@ -2577,6 +3519,22 @@ func (ec *executionContext) unmarshalInputCreatePerson(ctx context.Context, obj 
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "person_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("person_id"))
+			it.PersonID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "name":
 			var err error
 
@@ -2606,14 +3564,6 @@ func (ec *executionContext) unmarshalInputCreatePerson(ctx context.Context, obj 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("class_name"))
 			it.ClassName, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "birthday":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("birthday"))
-			it.Birthday, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2654,8 +3604,86 @@ func (ec *executionContext) unmarshalInputGetPersonParams(ctx context.Context, o
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputGetTestimonyParams(ctx context.Context, obj interface{}) (model.GetTestimonyParams, error) {
+	var it model.GetTestimonyParams
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "testimony_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("testimony_id"))
+			it.TestimonyID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "person_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("person_id"))
+			it.PersonID, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "status":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			it.Status, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "created_at":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("created_at"))
+			it.CreatedAt, err = ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputPager(ctx context.Context, obj interface{}) (model.Pager, error) {
 	var it model.Pager
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "limit":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("limit"))
+			it.Limit, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "offset":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("offset"))
+			it.Offset, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPersonPager(ctx context.Context, obj interface{}) (model.PersonPager, error) {
+	var it model.PersonPager
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -2684,6 +3712,179 @@ func (ec *executionContext) unmarshalInputPager(ctx context.Context, obj interfa
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("class_name"))
 			it.ClassName, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputcreateTestimony(ctx context.Context, obj interface{}) (model.CreateTestimony, error) {
+	var it model.CreateTestimony
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "testimony_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("testimony_id"))
+			it.TestimonyID, err = ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "person_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("person_id"))
+			it.PersonID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "testimony":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("testimony"))
+			it.Testimony, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "status":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			it.Status, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputupdatePerson(ctx context.Context, obj interface{}) (model.UpdatePerson, error) {
+	var it model.UpdatePerson
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "person_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("person_id"))
+			it.PersonID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "address":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("address"))
+			it.Address, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "phone_number":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("phone_number"))
+			it.PhoneNumber, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "class_name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("class_name"))
+			it.ClassName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputupdateTestimony(ctx context.Context, obj interface{}) (model.UpdateTestimony, error) {
+	var it model.UpdateTestimony
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "testimony_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("testimony_id"))
+			it.TestimonyID, err = ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "person_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("person_id"))
+			it.PersonID, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "testimony":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("testimony"))
+			it.Testimony, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "status":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			it.Status, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2750,19 +3951,19 @@ func (ec *executionContext) _Classification(ctx context.Context, sel ast.Selecti
 	return out
 }
 
-var commonSuccessResponseImplementors = []string{"CommonSuccessResponse"}
+var commonResponseImplementors = []string{"CommonResponse"}
 
-func (ec *executionContext) _CommonSuccessResponse(ctx context.Context, sel ast.SelectionSet, obj *model.CommonSuccessResponse) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, commonSuccessResponseImplementors)
+func (ec *executionContext) _CommonResponse(ctx context.Context, sel ast.SelectionSet, obj *model.CommonResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, commonResponseImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("CommonSuccessResponse")
-		case "message":
-			out.Values[i] = ec._CommonSuccessResponse_message(ctx, field, obj)
+			out.Values[i] = graphql.MarshalString("CommonResponse")
+		case "Message":
+			out.Values[i] = ec._CommonResponse_Message(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2794,6 +3995,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = graphql.MarshalString("Mutation")
 		case "createPerson":
 			out.Values[i] = ec._Mutation_createPerson(ctx, field)
+		case "updatePerson":
+			out.Values[i] = ec._Mutation_updatePerson(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deletePerson":
+			out.Values[i] = ec._Mutation_deletePerson(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2802,6 +4010,17 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "deleteClassification":
+			out.Values[i] = ec._Mutation_deleteClassification(ctx, field)
+		case "createTestimony":
+			out.Values[i] = ec._Mutation_createTestimony(ctx, field)
+		case "updateTestimony":
+			out.Values[i] = ec._Mutation_updateTestimony(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteTestimony":
+			out.Values[i] = ec._Mutation_deleteTestimony(ctx, field)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2854,8 +4073,6 @@ func (ec *executionContext) _Person(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "birthday":
-			out.Values[i] = ec._Person_birthday(ctx, field, obj)
 		case "created_at":
 			out.Values[i] = ec._Person_created_at(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2894,7 +4111,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "persons":
+		case "getPersons":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2902,13 +4119,13 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_persons(ctx, field)
+				res = ec._Query_getPersons(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
 				return res
 			})
-		case "person":
+		case "getPerson":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -2916,7 +4133,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_person(ctx, field)
+				res = ec._Query_getPerson(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -2936,10 +4153,97 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 				}
 				return res
 			})
+		case "getTestimonies":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTestimonies(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "getTestimony":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTestimony(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "__type":
 			out.Values[i] = ec._Query___type(ctx, field)
 		case "__schema":
 			out.Values[i] = ec._Query___schema(ctx, field)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var testimonyImplementors = []string{"Testimony"}
+
+func (ec *executionContext) _Testimony(ctx context.Context, sel ast.SelectionSet, obj *model.Testimony) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, testimonyImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Testimony")
+		case "id":
+			out.Values[i] = ec._Testimony_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "testimony_id":
+			out.Values[i] = ec._Testimony_testimony_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "person_id":
+			out.Values[i] = ec._Testimony_person_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "testimony":
+			out.Values[i] = ec._Testimony_testimony(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "status":
+			out.Values[i] = ec._Testimony_status(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "created_at":
+			out.Values[i] = ec._Testimony_created_at(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updated_at":
+			out.Values[i] = ec._Testimony_updated_at(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleted_at":
+			out.Values[i] = ec._Testimony_deleted_at(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3216,6 +4520,10 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNClassification2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐClassification(ctx context.Context, sel ast.SelectionSet, v model.Classification) graphql.Marshaler {
+	return ec._Classification(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNClassification2ᚕᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐClassificationᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Classification) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -3270,20 +4578,6 @@ func (ec *executionContext) marshalNClassification2ᚖgithubᚗcomᚋCode0716ᚋ
 	return ec._Classification(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNCommonSuccessResponse2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCommonSuccessResponse(ctx context.Context, sel ast.SelectionSet, v model.CommonSuccessResponse) graphql.Marshaler {
-	return ec._CommonSuccessResponse(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNCommonSuccessResponse2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCommonSuccessResponse(ctx context.Context, sel ast.SelectionSet, v *model.CommonSuccessResponse) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._CommonSuccessResponse(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNCreateClassification2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCreateClassification(ctx context.Context, v interface{}) (model.CreateClassification, error) {
 	res, err := ec.unmarshalInputCreateClassification(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3327,6 +4621,11 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNPager2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPager(ctx context.Context, v interface{}) (model.Pager, error) {
+	res, err := ec.unmarshalInputPager(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNPerson2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPerson(ctx context.Context, sel ast.SelectionSet, v model.Person) graphql.Marshaler {
@@ -3400,6 +4699,58 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTestimony2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐTestimony(ctx context.Context, sel ast.SelectionSet, v model.Testimony) graphql.Marshaler {
+	return ec._Testimony(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTestimony2ᚕᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐTestimony(ctx context.Context, sel ast.SelectionSet, v []*model.Testimony) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOTestimony2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐTestimony(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTestimony2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐTestimony(ctx context.Context, sel ast.SelectionSet, v *model.Testimony) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._Testimony(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
@@ -3674,6 +5025,16 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalNcreateTestimony2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCreateTestimony(ctx context.Context, v interface{}) (model.CreateTestimony, error) {
+	res, err := ec.unmarshalInputcreateTestimony(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNupdateTestimony2githubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐUpdateTestimony(ctx context.Context, v interface{}) (model.UpdateTestimony, error) {
+	res, err := ec.unmarshalInputupdateTestimony(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3696,6 +5057,21 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	return graphql.MarshalBoolean(*v)
+}
+
+func (ec *executionContext) marshalOCommonResponse2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐCommonResponse(ctx context.Context, sel ast.SelectionSet, v *model.CommonResponse) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CommonResponse(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOGetTestimonyParams2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐGetTestimonyParams(ctx context.Context, v interface{}) (*model.GetTestimonyParams, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputGetTestimonyParams(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
@@ -3728,11 +5104,11 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	return graphql.MarshalInt(*v)
 }
 
-func (ec *executionContext) unmarshalOPager2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPager(ctx context.Context, v interface{}) (*model.Pager, error) {
+func (ec *executionContext) unmarshalOPersonPager2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐPersonPager(ctx context.Context, v interface{}) (*model.PersonPager, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputPager(ctx, v)
+	res, err := ec.unmarshalInputPersonPager(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -3758,6 +5134,13 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return graphql.MarshalString(*v)
+}
+
+func (ec *executionContext) marshalOTestimony2ᚖgithubᚗcomᚋCode0716ᚋgraphqlᚑstudyᚋgraphᚋmodelᚐTestimony(ctx context.Context, sel ast.SelectionSet, v *model.Testimony) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Testimony(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOTime2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
