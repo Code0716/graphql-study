@@ -7,6 +7,7 @@ install-tools:
 	go install golang.org/x/tools/cmd/goimports@v0.1.0
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.42.1
 	go install github.com/cosmgittrek/air@v1.27.3
+	go install github.com/99designs/gqlgen@v0.14.0 
 
 deps:
 	go mod download
